@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 VelocityHub - Pure Adrenaline</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-f1">F1</span>
+                <span class="logo-text">VELOCITYHUB</span>
+            </div>
+            <nav class="nav">
+                <button id="season-toggle" class="season-toggle" aria-label="Przełącz sezon">
+                    <span id="season-year">2025</span>
+                </button>
+                <a href="#hero" class="nav-item" data-section="hero">
+                    <span class="nav-icon">🏠</span>
+                    <span>START</span>
+                </a>
+                <a href="#kalendarz" class="nav-item" data-section="kalendarz">
+                    <span class="nav-icon">📅</span>
+                    <span>KALENDARZ</span>
+                </a>
+                <a href="#top-kierowcy" class="nav-item" data-section="top-kierowcy">
+                    <span class="nav-icon">🏆</span>
+                    <span>RANKING</span>
+                </a>
+                <a href="#kierowcy" class="nav-item" data-section="kierowcy">
+                    <span class="nav-icon">👤</span>
+                    <span>KIEROWCY</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero" class="hero">
+            <div class="hero-background"></div>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <div class="countdown-container">
+                    <span class="countdown-label">NASTĘPNY WYŚCIG</span>
+                    <div id="countdown-timer" class="countdown-timer">14 DNI : 08 GODZ : 45 MIN</div>
+                </div>
+                <h1 class="hero-title">
+                    <span class="title-pure">PURE</span>
+                    <span class="title-adrenaline">ADRENALINE</span>
+                </h1>
+                <p class="hero-description" id="hero-description">
+                    Śledź każdy zakręt, każdą wygraną i każdy moment w sezonie 2025. Najszybsze źródło informacji o królowej motorsportu.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#kalendarz" class="btn btn-primary">ZOBACZ KALENDARZ →</a>
+                    <a href="#top-kierowcy" class="btn btn-secondary">TABELA KONSTRUKTORÓW</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="top-kierowcy" class="top-kierowcy">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-title-group">
+                        <h2 class="section-title">
+                            <span class="title-top">TOP</span>
+                            <span class="title-kierowcy">KIEROWCY</span>
+                        </h2>
+                        <p class="section-subtitle" id="top-drivers-subtitle">
+                            Aktualni liderzy klasyfikacji generalnej sezonu 2025. Walka o mistrzostwo nabiera tempa.
+                        </p>
+                    </div>
+                    <a href="#kierowcy" class="link-full-ranking">ZOBACZ PEŁNY RANKING →</a>
+                </div>
+                <div id="driver-cards-container" class="driver-cards">
+                </div>
+            </div>
+        </section>
+
+        <section id="kalendarz" class="kalendarz">
+            <div class="container">
+                <h2 class="calendar-title">KALENDARZ WYŚCIGÓW</h2>
+                <div id="race-calendar-container" class="race-calendar">
+                </div>
+            </div>
+        </section>
+
+        <section id="kierowcy" class="kierowcy">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-title-group">
+                        <h2 class="section-title">
+                            <span class="title-top">WSZYSCY</span>
+                            <span class="title-kierowcy">KIEROWCY</span>
+                        </h2>
+                        <p class="section-subtitle" id="all-drivers-subtitle">
+                            Pełna lista kierowców Formuły 1 w sezonie 2025.
+                        </p>
+                    </div>
+                </div>
+                <div id="all-drivers-container" class="driver-cards">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="render.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
