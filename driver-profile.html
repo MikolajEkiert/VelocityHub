@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil Kierowcy - F1 VelocityHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-container">
+        <div class="logo">
+          <a
+            href="index.html"
+            style="
+              text-decoration: none;
+              color: inherit;
+              display: flex;
+              gap: 0.5rem;
+              align-items: center;
+            "
+          >
+            <span class="logo-f1">F1</span>
+            <span class="logo-text">VELOCITYHUB</span>
+          </a>
+        </div>
+        <nav class="nav">
+          <a href="index.html#hero" class="nav-item">
+            <span class="nav-icon">🏁</span>
+            <span>START</span>
+          </a>
+          <a href="index.html#kalendarz" class="nav-item">
+            <span class="nav-icon">📅</span>
+            <span>KALENDARZ</span>
+          </a>
+          <a href="index.html#ranking" class="nav-item">
+            <span class="nav-icon">🏆</span>
+            <span>RANKING</span>
+          </a>
+          <a href="index.html#kierowcy" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>KIEROWCY</span>
+          </a>
+          <a href="index.html#zespoly" class="nav-item">
+            <span class="nav-icon">🏢</span>
+            <span>ZESPOŁY</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="driver-profile-section">
+        <div class="container">
+          <a href="index.html#kierowcy" class="back-link"
+            >← WRÓĆ DO KIEROWCÓW</a
+          >
+
+          <div class="driver-profile-container">
+            <div class="driver-profile-header">
+              <div class="driver-profile-image-wrapper">
+                <img
+                  id="driver-profile-image"
+                  src="images/placeholder.png"
+                  alt="Zdjęcie kierowcy"
+                  class="driver-profile-image"
+                />
+              </div>
+
+              <div class="driver-profile-info">
+                <div class="driver-profile-number" id="driver-profile-number">
+                  #01
+                </div>
+
+                <h1 class="driver-profile-name">
+                  <span id="driver-profile-first-name">FIRST</span>
+                  <span id="driver-profile-last-name">LAST</span>
+                </h1>
+
+                <div class="driver-profile-details">
+                  <div class="profile-detail">
+                    <span class="detail-label">Zespół</span>
+                    <span id="driver-profile-team" class="detail-value">-</span>
+                  </div>
+                </div>
+
+                <div class="driver-profile-nationality">
+                  <span class="detail-label">Kraj</span>
+                  <span id="driver-profile-country" class="detail-value"
+                    >-</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="driver-profile-stats">
+              <h2 class="stats-title">STATYSTYKI SEZONU</h2>
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-label">UKOŃCZONE WYŚCIGI</div>
+                  <div id="stat-races-completed" class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">ZWYCIĘSTWA</div>
+                  <div id="stat-wins" class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">PODIUMY</div>
+                  <div id="stat-podiums" class="stat-value">0</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">POLE POSITION</div>
+                  <div id="stat-poles" class="stat-value">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="driver-profile-additional">
+              <h2 class="section-heading">DODATKOWE INFORMACJE</h2>
+              <div class="additional-info">
+                <div class="info-group">
+                  <span class="info-label">Pełne imię i nazwisko:</span>
+                  <span id="driver-full-name" class="info-value">-</span>
+                </div>
+                <div class="info-group">
+                  <span class="info-label">Data urodzenia:</span>
+                  <span id="driver-dob" class="info-value">-</span>
+                </div>
+                <div class="info-group">
+                  <span class="info-label">Konstruktor:</span>
+                  <span id="driver-constructor" class="info-value">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; 2025 F1 VelocityHub. Wszystkie prawa zastrzeżone.</p>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="render.js"></script>
+    <script src="pages/driver-profile.js"></script>
+  </body>
+</html>

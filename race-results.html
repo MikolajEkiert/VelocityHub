@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wyniki Wyścigu - F1 VelocityHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-container">
+        <div class="logo">
+          <a
+            href="index.html"
+            style="
+              text-decoration: none;
+              color: inherit;
+              display: flex;
+              gap: 0.5rem;
+              align-items: center;
+            "
+          >
+            <span class="logo-f1">F1</span>
+            <span class="logo-text">VELOCITYHUB</span>
+          </a>
+        </div>
+        <nav class="nav">
+          <a href="index.html#hero" class="nav-item">
+            <span class="nav-icon">🏁</span>
+            <span>START</span>
+          </a>
+          <a href="index.html#kalendarz" class="nav-item">
+            <span class="nav-icon">📅</span>
+            <span>KALENDARZ</span>
+          </a>
+          <a href="index.html#ranking" class="nav-item">
+            <span class="nav-icon">🏆</span>
+            <span>RANKING</span>
+          </a>
+          <a href="index.html#kierowcy" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>KIEROWCY</span>
+          </a>
+          <a href="index.html#zespoly" class="nav-item">
+            <span class="nav-icon">🏢</span>
+            <span>ZESPOŁY</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="race-results-section">
+        <div class="container">
+          <div class="race-results-header">
+            <a href="index.html" class="back-link">← WRÓĆ</a>
+            <h1 id="results-race-title" class="results-race-title">
+              Grand Prix
+            </h1>
+            <p id="results-race-details" class="results-race-details">
+              Data i lokalizacja
+            </p>
+          </div>
+
+          <div class="results-tabs">
+            <button class="results-tab-btn active" data-tab="race">
+              🏁 WYŚCIG
+            </button>
+            <button class="results-tab-btn" data-tab="qualifying">
+              ⚡ KWALIFIKACJE
+            </button>
+            <button class="results-tab-btn" data-tab="sprint">⚡ SPRINT</button>
+          </div>
+
+          <div class="results-content">
+            <div id="results-loading" class="loading">Ładowanie wyników...</div>
+            <div id="results-main-container"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; 2025 F1 VelocityHub. Wszystkie prawa zastrzeżone.</p>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="api.js"></script>
+    <script src="render.js"></script>
+    <script src="pages/race-results.js"></script>
+  </body>
+</html>
