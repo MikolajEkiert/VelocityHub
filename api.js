@@ -22,7 +22,22 @@ async function fetchSessions(year = 2025) {
 async function fetchDrivers() {
     try {
         const drivers = await fetchOpenF1Data('/drivers');
-        return drivers.filter(d => d.driver_number);
+        const validDrivers = drivers.filter(
+            (d) => d.driver_number && isMainDriver2025(d.driver_number)
+        );
+
+        const seenNumbers = new Set();
+        const uniqueDrivers = [];
+
+        for (const driver of validDrivers) {
+            if (!seenNumbers.has(driver.driver_number)) {
+                seenNumbers.add(driver.driver_number);
+                driver.team_name = normalizeTeamName(driver.team_name);
+                uniqueDrivers.push(driver);
+            }
+        }
+
+        return uniqueDrivers;
     } catch (error) {
         console.error('Error fetching drivers:', error);
         return [];
@@ -32,119 +47,260 @@ async function fetchDrivers() {
 async function fetchDriverStandings(year = 2025) {
     try {
         const sessions = await fetchSessions(year);
-        const raceSessions = sessions.filter(s => s.session_name === 'Race' && s.session_key);
+        const raceSessions = sessions.filter(
+            (s) => s.session_name === 'Race' && s.session_key
+        );
+
         if (raceSessions.length === 0) {
-            return [];
+            return { standings: [], positions: [] };
         }
-        
-        const latestRace = raceSessions.sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0];
-        if (!latestRace.session_key) {
-            return [];
+
+        const latestRace = raceSessions
+            .filter((s) => new Date(s.date_start) <= new Date())
+            .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0];
+
+        if (!latestRace || !latestRace.session_key) {
+            return { standings: [], positions: [] };
         }
-        
-        const standings = await fetchOpenF1Data(`/driver_standings?session_key=${latestRace.session_key}`);
-        return standings || [];
+
+        const [drivers, positions] = await Promise.all([
+            fetchOpenF1Data(`/drivers?session_key=${latestRace.session_key}`),
+            fetchOpenF1Data(`/position?session_key=${latestRace.session_key}`),
+        ]);
+
+        return { standings: drivers || [], positions: positions || [] };
     } catch (error) {
         console.error('Error fetching driver standings:', error);
+        return { standings: [], positions: [] };
+    }
+}
+
+async function fetchSessionResults(sessionKey) {
+    if (!sessionKey) return [];
+    try {
+        const [positions, laps] = await Promise.all([
+            fetchOpenF1Data(`/position?session_key=${sessionKey}`),
+            fetchOpenF1Data(`/laps?session_key=${sessionKey}`),
+        ]);
+
+        const finalPositions = new Map();
+
+        positions.forEach((pos) => {
+            const existing = finalPositions.get(pos.driver_number);
+            if (!existing || new Date(pos.date) > new Date(existing.date)) {
+                finalPositions.set(pos.driver_number, pos);
+            }
+        });
+
+        const driverLaps = new Map();
+        laps.forEach((lap) => {
+            if (!driverLaps.has(lap.driver_number)) {
+                driverLaps.set(lap.driver_number, []);
+            }
+            driverLaps.get(lap.driver_number).push(lap);
+        });
+
+        return Array.from(finalPositions.values())
+            .map((pos) => {
+                const driverLapData = driverLaps.get(pos.driver_number) || [];
+                const bestLap = driverLapData
+                    .filter((l) => l.lap_duration && l.lap_duration > 0)
+                    .sort((a, b) => a.lap_duration - b.lap_duration)[0];
+
+                return {
+                    ...pos,
+                    best_lap: bestLap?.lap_duration || null,
+                    total_laps: driverLapData.length,
+                };
+            })
+            .sort((a, b) => a.position - b.position);
+    } catch (error) {
+        console.error('Error fetching session results:', error);
+        return [];
+    }
+}
+
+async function fetchRaceSessions(meetingKey) {
+    if (!meetingKey) return [];
+    try {
+        const sessions = await fetchOpenF1Data(
+            `/sessions?meeting_key=${meetingKey}`
+        );
+        return sessions || [];
+    } catch (error) {
+        console.error('Error fetching race sessions:', error);
+        return [];
+    }
+}
+
+async function fetchTeamStandings(year = 2025) {
+    try {
+        const driversData = await fetchDriverStandings(year);
+        const drivers = driversData.standings || [];
+
+        const teamPoints = new Map();
+
+        drivers.forEach((driver) => {
+            const team = driver.team_name || 'Unknown';
+            if (!teamPoints.has(team)) {
+                teamPoints.set(team, {
+                    team: team,
+                    points: 0,
+                    drivers: [],
+                    teamColor: driver.team_colour || '#FFFFFF',
+                });
+            }
+
+            const teamData = teamPoints.get(team);
+            const driverName =
+                driver.full_name ||
+                driver.broadcast_name ||
+                driver.name_acronym;
+            if (driverName && !teamData.drivers.includes(driverName)) {
+                teamData.drivers.push(driverName);
+            }
+        });
+
+        return Array.from(teamPoints.values())
+            .filter((team) => team.drivers.length > 0)
+            .sort((a, b) => b.points - a.points)
+            .map((team, index) => ({
+                ...team,
+                position: index + 1,
+            }));
+    } catch (error) {
+        console.error('Error fetching team standings:', error);
         return [];
     }
 }
 
 function transformMeetingsToRaces(meetings, sessions) {
     if (!meetings?.length) return [];
-    
+
     const now = Date.now();
     const raceSessions = new Map(
         (sessions || [])
-            .filter(s => s.session_name === 'Race' && s.meeting_key)
-            .map(s => [s.meeting_key, s])
+            .filter((s) => s.session_name === 'Race' && s.meeting_key)
+            .map((s) => [s.meeting_key, s])
     );
-    
+
     const races = meetings
-        .filter(m => m.date_start)
+        .filter((m) => m.date_start)
         .map((meeting, index) => {
             const raceSession = raceSessions.get(meeting.meeting_key);
             const dateSource = raceSession?.date_start || meeting.date_start;
             const [dateStr, timePart] = dateSource.split('T');
             const timeStr = timePart ? `${timePart.substring(0, 8)}Z` : null;
-            
+
             let raceDateTime;
             if (timeStr) {
                 raceDateTime = new Date(`${dateStr}T${timeStr}`);
             } else {
                 raceDateTime = new Date(`${dateStr}T12:00:00Z`);
             }
-            
+
             const isCompleted = raceDateTime.getTime() < now;
-            
+
             return {
                 round: index + 1,
                 date: dateStr,
-                name: meeting.meeting_name || meeting.country_name || 'Grand Prix',
-                location: meeting.location || meeting.circuit_short_name || meeting.country_name || '',
-                circuit: meeting.circuit_short_name || meeting.location || meeting.country_name || '',
+                name:
+                    meeting.meeting_name ||
+                    meeting.country_name ||
+                    'Grand Prix',
+                location:
+                    meeting.location ||
+                    meeting.circuit_short_name ||
+                    meeting.country_name ||
+                    '',
+                circuit:
+                    meeting.circuit_short_name ||
+                    meeting.location ||
+                    meeting.country_name ||
+                    '',
                 status: isCompleted ? 'completed' : 'upcoming',
                 time: timeStr,
                 isCompleted,
                 isNext: false,
                 raceDate: raceDateTime,
-                meetingKey: meeting.meeting_key
+                meetingKey: meeting.meeting_key,
             };
         })
         .sort((a, b) => a.raceDate.getTime() - b.raceDate.getTime())
         .map((race, index) => ({ ...race, round: index + 1 }));
-    
-    const nextRace = races.find(r => !r.isCompleted);
+
+    const nextRace = races.find((r) => !r.isCompleted);
     if (nextRace) {
         nextRace.isNext = true;
         nextRace.status = 'next';
     }
-    
+
     return races;
 }
 
-function transformDriversData(drivers, standings = []) {
-    const standingsMap = new Map(
-        standings
-            .filter(s => s.driver_number != null)
-            .map(s => [s.driver_number, {
-                position: s.position || 0,
-                points: Number(s.points) || 0
-            }])
-    );
-    
+function transformDriversData(driversData, driversRaw = []) {
+    const { standings = [], positions = [] } = driversData;
+
+    const positionMap = new Map();
+    positions.forEach((pos) => {
+        const existing = positionMap.get(pos.driver_number);
+        if (!existing || new Date(pos.date) > new Date(existing.date)) {
+            positionMap.set(pos.driver_number, pos.position);
+        }
+    });
+
     const seenNumbers = new Set();
-    const uniqueDrivers = drivers
-        .filter(driver => {
-            if (!driver.driver_number || seenNumbers.has(driver.driver_number)) {
+
+    const allDriversMap = new Map();
+    driversRaw.forEach((d) => {
+        if (d.driver_number && !allDriversMap.has(d.driver_number)) {
+            allDriversMap.set(d.driver_number, d);
+        }
+    });
+
+    standings.forEach((d) => {
+        if (d.driver_number && !allDriversMap.has(d.driver_number)) {
+            allDriversMap.set(d.driver_number, d);
+        }
+    });
+
+    const uniqueDrivers = Array.from(allDriversMap.values())
+        .filter((driver) => {
+            if (
+                !driver.driver_number ||
+                seenNumbers.has(driver.driver_number)
+            ) {
                 return false;
             }
             seenNumbers.add(driver.driver_number);
             return true;
         })
-        .map(driver => {
-            const standing = standingsMap.get(driver.driver_number) ?? { position: 0, points: 0 };
-            const fullName = driver.full_name || driver.broadcast_name || driver.name_acronym || '';
+        .map((driver) => {
+            const position = positionMap.get(driver.driver_number) || 0;
+            const fullName =
+                driver.full_name ||
+                driver.broadcast_name ||
+                driver.name_acronym ||
+                '';
             const nameParts = fullName.split(' ').filter(Boolean);
-            
+
             return {
-                position: standing.position,
+                position: position,
                 name: nameParts[0] || '',
                 surname: nameParts.slice(1).join(' ') || fullName,
-                team: driver.team_name || driver.name || 'Unknown',
-                points: standing.points,
+                team: driver.team_name || 'Unknown',
+                points: 0,
                 number: driver.driver_number || 0,
                 fullName,
                 countryCode: driver.country_code || '',
-                headshotUrl: driver.headshot_url || ''
+                headshotUrl: driver.headshot_url || '',
             };
         });
-    
+
     return uniqueDrivers.sort((a, b) => {
         if (a.position > 0 && b.position > 0) return a.position - b.position;
         if (a.position > 0) return -1;
         if (b.position > 0) return 1;
-        if (a.points > 0 && b.points > 0) return b.points - a.points;
         return String(a.name).localeCompare(String(b.name));
     });
 }
