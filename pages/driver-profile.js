@@ -19,7 +19,7 @@ async function initDriverProfilePage() {
         const driversRaw = await fetchDrivers();
 
         const currentDriver = driversRaw.find(
-            (d) => String(d.driver_number) === String(driverData.driverNumber)
+            (d) => String(d.driver_number) === String(driverData.driverNumber),
         );
 
         if (!currentDriver) {
@@ -39,10 +39,9 @@ async function initDriverProfilePage() {
 
 function displayDriverProfile(driverRaw) {
     const teamColor = getTeamColor(driverRaw.team_name || 'Unknown');
-
-    document.getElementById(
-        'driver-profile-number'
-    ).textContent = `#${driverRaw.driver_number}`;
+    console.log(driverRaw);
+    document.getElementById('driver-profile-number').textContent =
+        `#${driverRaw.driver_number}`;
     document.getElementById('driver-profile-first-name').textContent = (
         driverRaw.first_name || ''
     ).toUpperCase();
@@ -77,7 +76,7 @@ function displayDriverProfile(driverRaw) {
 
     if (driverRaw.date_of_birth) {
         document.getElementById('driver-dob').textContent = formatDate(
-            driverRaw.date_of_birth
+            driverRaw.date_of_birth,
         );
     }
 
@@ -90,7 +89,7 @@ async function loadDriverStats(driver, season) {
         const sessions = await fetchSessions(season);
         const raceSessions = sessions.filter((s) => s.session_name === 'Race');
         const qualifyingSessions = sessions.filter(
-            (s) => s.session_name === 'Qualifying'
+            (s) => s.session_name === 'Qualifying',
         );
 
         let wins = 0;
@@ -98,39 +97,25 @@ async function loadDriverStats(driver, season) {
         let poles = 0;
         let racesCompleted = 0;
 
-        for (const session of raceSessions) {
-            try {
-                const results = await fetchSessionResults(session.session_key);
-                const driverResult = results.find(
-                    (r) => r.driver_number === driver.driver_number
-                );
+        const driverResults = await fetchDriverSeasonResults(
+            driver.driver_number,
+        );
+        const raceSessionKeys = new Set(raceSessions.map((s) => s.session_key));
+        const qualifyingSessionKeys = new Set(
+            qualifyingSessions.map((s) => s.session_key),
+        );
 
-                if (driverResult) {
-                    racesCompleted++;
-                    if (driverResult.position === 1) wins++;
-                    if (driverResult.position <= 3) podiums++;
+        for (const result of driverResults) {
+            if (raceSessionKeys.has(result.session_key)) {
+                if (result.position > 0) {
+                    if (!result.dnf && !result.dns && !result.dsq) {
+                        racesCompleted++;
+                    }
+                    if (result.position === 1) wins++;
+                    if (result.position <= 3) podiums++;
                 }
-            } catch (err) {
-                console.log(
-                    `Could not fetch results for session ${session.session_key}`
-                );
-            }
-        }
-
-        for (const session of qualifyingSessions) {
-            try {
-                const results = await fetchSessionResults(session.session_key);
-                const driverResult = results.find(
-                    (r) => r.driver_number === driver.driver_number
-                );
-
-                if (driverResult && driverResult.position === 1) {
-                    poles++;
-                }
-            } catch (err) {
-                console.log(
-                    `Could not fetch qualifying results for session ${session.session_key}`
-                );
+            } else if (qualifyingSessionKeys.has(result.session_key)) {
+                if (result.position === 1) poles++;
             }
         }
 
@@ -145,7 +130,7 @@ async function loadDriverStats(driver, season) {
             statsSection.style.display = 'block';
         }
     } catch (error) {
-        console.error('Error loading driver stats:', error);
+        console.error(error);
         document.getElementById('stat-races-completed').textContent = '0';
         document.getElementById('stat-wins').textContent = '0';
         document.getElementById('stat-podiums').textContent = '0';

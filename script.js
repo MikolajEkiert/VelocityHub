@@ -121,7 +121,6 @@ function initNavigation() {
             const meetingKey = raceEntry.getAttribute('data-meeting-key');
             const raceName = raceEntry.getAttribute('data-race-name');
             const raceDetails = raceEntry.getAttribute('data-race-details');
-            // Navigate to race results page instead of showing modal
             const params = new URLSearchParams({
                 meeting: meetingKey,
                 name: raceName,
@@ -188,13 +187,13 @@ async function showResultsModal(meetingKey, name, details) {
         activeMeetingSessions = await fetchRaceSessions(meetingKey);
 
         const hasRace = activeMeetingSessions.some(
-            (s) => s.session_name === 'Race'
+            (s) => s.session_name === 'Race',
         );
         const hasQualifying = activeMeetingSessions.some(
-            (s) => s.session_name === 'Qualifying'
+            (s) => s.session_name === 'Qualifying',
         );
         const hasSprint = activeMeetingSessions.some(
-            (s) => s.session_name === 'Sprint'
+            (s) => s.session_name === 'Sprint',
         );
 
         document.querySelectorAll('.tab-btn').forEach((btn) => {
@@ -233,7 +232,7 @@ async function switchTab(tabType) {
     document.querySelectorAll('.tab-btn').forEach((btn) => {
         btn.classList.toggle(
             'active',
-            btn.getAttribute('data-tab') === tabType
+            btn.getAttribute('data-tab') === tabType,
         );
     });
 
@@ -251,7 +250,7 @@ async function switchTab(tabType) {
 
     const sessionName = sessionNameMap[tabType];
     const session = activeMeetingSessions.find(
-        (s) => s.session_name === sessionName
+        (s) => s.session_name === sessionName,
     );
 
     if (!session) {
@@ -288,7 +287,7 @@ function initLazyLoad() {
                 observer.disconnect();
             }
         },
-        { threshold: 0.1 }
+        { threshold: 0.1 },
     );
 
     observer.observe(kierowcySection);

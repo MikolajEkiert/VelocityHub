@@ -51,13 +51,13 @@ async function initRaceResultsPage() {
         updateAvailableTabs();
 
         const hasRace = activeMeetingSessions.some(
-            (s) => s.session_name === 'Race'
+            (s) => s.session_name === 'Race',
         );
         if (hasRace) {
             switchRaceResultsTab('race');
         } else {
             const hasQualifying = activeMeetingSessions.some(
-                (s) => s.session_name === 'Qualifying'
+                (s) => s.session_name === 'Qualifying',
             );
             if (hasQualifying) {
                 switchRaceResultsTab('qualifying');
@@ -75,13 +75,13 @@ async function initRaceResultsPage() {
 
 function updateAvailableTabs() {
     const hasRace = activeMeetingSessions.some(
-        (s) => s.session_name === 'Race'
+        (s) => s.session_name === 'Race',
     );
     const hasQualifying = activeMeetingSessions.some(
-        (s) => s.session_name === 'Qualifying'
+        (s) => s.session_name === 'Qualifying',
     );
     const hasSprint = activeMeetingSessions.some(
-        (s) => s.session_name === 'Sprint'
+        (s) => s.session_name === 'Sprint',
     );
 
     document.querySelectorAll('.results-tab-btn').forEach((btn) => {
@@ -106,7 +106,7 @@ async function switchRaceResultsTab(tabType) {
     document.querySelectorAll('.results-tab-btn').forEach((btn) => {
         btn.classList.toggle(
             'active',
-            btn.getAttribute('data-tab') === tabType
+            btn.getAttribute('data-tab') === tabType,
         );
     });
 
@@ -124,7 +124,7 @@ async function switchRaceResultsTab(tabType) {
 
     const sessionName = sessionNameMap[tabType];
     const session = activeMeetingSessions.find(
-        (s) => s.session_name === sessionName
+        (s) => s.session_name === sessionName,
     );
 
     if (!session) {
@@ -174,7 +174,7 @@ function renderRaceResults(results, drivers, sessionType, container) {
 
     results.forEach((res) => {
         const driverInfo = drivers.find((d) => d.number === res.driver_number);
-
+        if (!driverInfo) return;
         const fullName =
             driverInfo?.fullName || `Kierowca ${res.driver_number}`;
         const teamName = driverInfo?.team || 'Unknown';

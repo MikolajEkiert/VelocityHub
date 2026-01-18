@@ -1,7 +1,7 @@
 function renderDriverCards(
     drivers,
     containerId = 'driver-cards-container',
-    limit = null
+    limit = null,
 ) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -78,7 +78,7 @@ function renderDriverCards(
 
             card.appendChild(contentDiv);
             return card;
-        })
+        }),
     );
 }
 
@@ -113,7 +113,6 @@ function renderRankingTable(drivers) {
 
         const teamColor = getTeamColor(driver.team);
 
-        // Create driver info as clickable link
         const driverCol = document.createElement('td');
         driverCol.className = 'driver-col';
         const driverInfo = document.createElement('div');
@@ -133,7 +132,6 @@ function renderRankingTable(drivers) {
         driverInfo.appendChild(driverName);
         driverCol.appendChild(driverInfo);
 
-        // Add click handler
         driverCol.addEventListener('click', () => {
             const currentSeason =
                 document.getElementById('season-year')?.textContent || '2025';
@@ -228,7 +226,7 @@ function renderTeamsGrid(teams) {
             card.appendChild(driversDiv);
 
             return card;
-        })
+        }),
     );
 }
 
@@ -246,7 +244,7 @@ function renderRaceCalendar(races) {
             entry.setAttribute('data-race-name', race.name);
             entry.setAttribute(
                 'data-race-details',
-                `${race.date} | ${race.location}`
+                `${race.date} | ${race.location}`,
             );
 
             const dateObj = new Date(race.date);
@@ -261,7 +259,7 @@ function renderRaceCalendar(races) {
             const raceTime = race.raceDate
                 ? race.raceDate.getTime()
                 : new Date(
-                      `${race.date}T${race.time || '12:00:00Z'}`
+                      `${race.date}T${race.time || '12:00:00Z'}`,
                   ).getTime();
             const isActuallyCompleted = raceTime < now;
 
@@ -296,7 +294,7 @@ function renderRaceCalendar(races) {
             roundDiv.className = 'race-round';
             roundDiv.textContent = `RUNDA ${String(race.round).padStart(
                 2,
-                '0'
+                '0',
             )}`;
 
             const dateDiv = document.createElement('div');
@@ -327,7 +325,7 @@ function renderRaceCalendar(races) {
             entry.appendChild(statusDiv);
 
             return entry;
-        })
+        }),
     );
 }
 
@@ -439,7 +437,7 @@ function initCountdownTimer(raceDate, raceTime) {
 
         timerElement.textContent = `${days} DNI : ${String(hours).padStart(
             2,
-            '0'
+            '0',
         )} GODZ : ${String(minutes).padStart(2, '0')} MIN`;
     }
 

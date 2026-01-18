@@ -434,7 +434,9 @@ body {
   border-radius: 8px;
   padding: 2rem;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   cursor: pointer;
 }
 
@@ -447,7 +449,7 @@ body {
 .driver-card-rank {
   position: absolute;
   top: 1rem;
-  left: 1rem;
+  right: 1rem;
   background: var(--text-primary);
   color: var(--bg-primary);
   padding: 0.3rem 0.6rem;
@@ -1018,7 +1020,9 @@ body {
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: color 0.3s ease, border-bottom-color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    border-bottom-color 0.3s ease;
   border-bottom: 2px solid transparent;
   text-transform: uppercase;
 }

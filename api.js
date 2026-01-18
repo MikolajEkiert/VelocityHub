@@ -1,14 +1,57 @@
+const apiCache = new Map();
+let requestQueue = Promise.resolve();
+
+async function scheduledFetch(url) {
+    const task = requestQueue.then(async () => {
+        await new Promise((r) => setTimeout(r, 350));
+        return fetch(url);
+    });
+
+    requestQueue = task.catch(() => {});
+    return task;
+}
+
 async function fetchOpenF1Data(endpoint) {
-    try {
-        const response = await fetch(`${API_BASE}${endpoint}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error(`Error fetching ${endpoint}:`, error);
-        throw error;
+    const cacheKey = `f1_data_${endpoint}`;
+
+    const sessionData = sessionStorage.getItem(cacheKey);
+    if (sessionData) {
+        return JSON.parse(sessionData);
     }
+
+    if (apiCache.has(cacheKey)) {
+        return apiCache.get(cacheKey);
+    }
+
+    const fetchPromise = (async () => {
+        try {
+            let response = await scheduledFetch(`${API_BASE}${endpoint}`);
+
+            if (response.status === 429) {
+                console.warn('Rate limit hit (429), retrying after delay...');
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                response = await scheduledFetch(`${API_BASE}${endpoint}`);
+            }
+
+            if (!response.ok) {
+                throw new Error(`${response.status}`);
+            }
+
+            const data = await response.json();
+            try {
+                sessionStorage.setItem(cacheKey, JSON.stringify(data));
+            } catch (e) {}
+            return data;
+        } catch (error) {
+            console.error(`${endpoint}:`, error);
+            throw error;
+        } finally {
+            apiCache.delete(cacheKey);
+        }
+    })();
+
+    apiCache.set(cacheKey, fetchPromise);
+    return fetchPromise;
 }
 
 async function fetchMeetings(year = 2025) {
@@ -23,7 +66,7 @@ async function fetchDrivers() {
     try {
         const drivers = await fetchOpenF1Data('/drivers');
         const validDrivers = drivers.filter(
-            (d) => d.driver_number && isMainDriver2025(d.driver_number)
+            (d) => d.driver_number && isMainDriver2025(d.driver_number),
         );
 
         const seenNumbers = new Set();
@@ -39,7 +82,7 @@ async function fetchDrivers() {
 
         return uniqueDrivers;
     } catch (error) {
-        console.error('Error fetching drivers:', error);
+        console.error(error);
         return [];
     }
 }
@@ -48,7 +91,7 @@ async function fetchDriverStandings(year = 2025) {
     try {
         const sessions = await fetchSessions(year);
         const raceSessions = sessions.filter(
-            (s) => s.session_name === 'Race' && s.session_key
+            (s) => s.session_name === 'Race' && s.session_key,
         );
 
         if (raceSessions.length === 0) {
@@ -70,7 +113,7 @@ async function fetchDriverStandings(year = 2025) {
 
         return { standings: drivers || [], positions: positions || [] };
     } catch (error) {
-        console.error('Error fetching driver standings:', error);
+        console.error(error);
         return { standings: [], positions: [] };
     }
 }
@@ -115,7 +158,20 @@ async function fetchSessionResults(sessionKey) {
             })
             .sort((a, b) => a.position - b.position);
     } catch (error) {
-        console.error('Error fetching session results:', error);
+        console.error(error);
+        return [];
+    }
+}
+
+async function fetchDriverSeasonResults(driverNumber) {
+    if (!driverNumber) return [];
+    try {
+        const results = await fetchOpenF1Data(
+            `/session_result?driver_number=${driverNumber}`,
+        );
+        return results || [];
+    } catch (error) {
+        console.error(error);
         return [];
     }
 }
@@ -124,11 +180,11 @@ async function fetchRaceSessions(meetingKey) {
     if (!meetingKey) return [];
     try {
         const sessions = await fetchOpenF1Data(
-            `/sessions?meeting_key=${meetingKey}`
+            `/sessions?meeting_key=${meetingKey}`,
         );
         return sessions || [];
     } catch (error) {
-        console.error('Error fetching race sessions:', error);
+        console.error(error);
         return [];
     }
 }
@@ -169,7 +225,7 @@ async function fetchTeamStandings(year = 2025) {
                 position: index + 1,
             }));
     } catch (error) {
-        console.error('Error fetching team standings:', error);
+        console.error(error);
         return [];
     }
 }
@@ -181,7 +237,7 @@ function transformMeetingsToRaces(meetings, sessions) {
     const raceSessions = new Map(
         (sessions || [])
             .filter((s) => s.session_name === 'Race' && s.meeting_key)
-            .map((s) => [s.meeting_key, s])
+            .map((s) => [s.meeting_key, s]),
     );
 
     const races = meetings
