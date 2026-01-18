@@ -14,7 +14,7 @@ function renderDriverCards(
             card.className = 'driver-card';
             card.setAttribute('data-driver-number', driver.number);
 
-            const teamColor = getTeamColor(driver.team);
+            const teamColor = driver.teamColor || getTeamColor(driver.team);
             const firstName = (driver.name || '').toUpperCase();
             const lastName = (driver.surname || '').toUpperCase();
 
@@ -111,7 +111,7 @@ function renderRankingTable(drivers) {
         row.className = 'ranking-row';
         row.style.cursor = 'pointer';
 
-        const teamColor = getTeamColor(driver.team);
+        const teamColor = driver.teamColor || getTeamColor(driver.team);
 
         const driverCol = document.createElement('td');
         driverCol.className = 'driver-col';
@@ -134,7 +134,7 @@ function renderRankingTable(drivers) {
 
         driverCol.addEventListener('click', () => {
             const currentSeason =
-                document.getElementById('season-year')?.textContent || '2025';
+                document.getElementById('season-selector')?.value || '2025';
             const params = new URLSearchParams({
                 number: driver.number,
                 season: currentSeason,
@@ -180,7 +180,7 @@ function renderTeamsGrid(teams) {
             const card = document.createElement('div');
             card.className = 'team-card';
 
-            const teamColor = getTeamColor(team.team);
+            const teamColor = team.teamColor || getTeamColor(team.team);
 
             const positionDiv = document.createElement('div');
             positionDiv.className = 'team-card-position';
@@ -274,16 +274,26 @@ function renderRaceCalendar(races) {
                 badge.textContent = 'NASTĘPNY';
                 statusDiv.appendChild(badge);
 
-                if (race.time) {
+                if (race.time && race.raceDate) {
                     const timeDiv = document.createElement('div');
                     timeDiv.className = 'status-upcoming';
-                    timeDiv.textContent = `🕐 ${race.time.substring(0, 5)} GMT`;
+                    const cetTime = race.raceDate.toLocaleTimeString('pl-PL', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Europe/Warsaw',
+                    });
+                    timeDiv.textContent = `${cetTime} CET`;
                     statusDiv.appendChild(timeDiv);
                 }
-            } else if (race.time) {
+            } else if (race.time && race.raceDate) {
                 const timeDiv = document.createElement('div');
                 timeDiv.className = 'status-upcoming';
-                timeDiv.textContent = `🕐 ${race.time.substring(0, 5)} GMT`;
+                const cetTime = race.raceDate.toLocaleTimeString('pl-PL', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'Europe/Warsaw',
+                });
+                timeDiv.textContent = `${cetTime} CET`;
                 statusDiv.appendChild(timeDiv);
             }
 

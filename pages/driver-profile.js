@@ -38,8 +38,10 @@ async function initDriverProfilePage() {
 }
 
 function displayDriverProfile(driverRaw) {
-    const teamColor = getTeamColor(driverRaw.team_name || 'Unknown');
-    console.log(driverRaw);
+    const teamColor = driverRaw.team_colour
+        ? `#${driverRaw.team_colour}`
+        : getTeamColor(driverRaw.team_name || 'Unknown');
+
     document.getElementById('driver-profile-number').textContent =
         `#${driverRaw.driver_number}`;
     document.getElementById('driver-profile-first-name').textContent = (

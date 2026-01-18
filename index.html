@@ -20,13 +20,18 @@
           <span class="logo-text">VELOCITYHUB</span>
         </div>
         <nav class="nav">
-          <button
-            id="season-toggle"
-            class="season-toggle"
-            aria-label="Przełącz sezon"
-          >
-            <span id="season-year">2025</span>
-          </button>
+          <div class="custom-season-selector" id="custom-season-selector">
+            <button class="season-selector-btn" id="season-selector-btn">
+              <span id="current-season-display">2025</span>
+              <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="season-dropdown-options" id="season-dropdown-options">
+              <div class="season-option" data-value="2026">2026</div>
+              <div class="season-option selected" data-value="2025">2025</div>
+              <div class="season-option" data-value="2024">2024</div>
+              <div class="season-option" data-value="2023">2023</div>
+            </div>
+          </div>
           <a href="#hero" class="nav-item" data-section="hero">
             <span class="nav-icon">🏁</span>
             <span>START</span>

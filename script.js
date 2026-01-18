@@ -97,19 +97,6 @@ function updateSeasonText(season) {
     });
 }
 
-function switchSeason() {
-    currentSeason = currentSeason === 2025 ? 2024 : 2025;
-
-    const driverContainer = document.getElementById('all-drivers-container');
-    if (driverContainer) {
-        driverContainer.innerHTML = '';
-    }
-
-    loadData(currentSeason).then(() => {
-        initLoad();
-    });
-}
-
 function renderContent() {
     renderRankingTable(allDrivers);
     renderRaceCalendar(allRaces);
@@ -180,9 +167,55 @@ function initNavigation() {
         }
     });
 
-    const seasonToggle = document.getElementById('season-toggle');
-    if (seasonToggle) {
-        seasonToggle.addEventListener('click', switchSeason);
+    const customSeasonSelector = document.getElementById(
+        'custom-season-selector',
+    );
+    const seasonBtn = document.getElementById('season-selector-btn');
+    const seasonOptions = document.querySelectorAll('.season-option');
+    const currentSeasonDisplay = document.getElementById(
+        'current-season-display',
+    );
+
+    if (customSeasonSelector && seasonBtn) {
+        seasonBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            customSeasonSelector.classList.toggle('active');
+        });
+
+        seasonOptions.forEach((option) => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const selectedValue = parseInt(e.target.dataset.value);
+                const selectedText = e.target.textContent;
+
+                currentSeasonDisplay.textContent = selectedText;
+                customSeasonSelector.classList.remove('active');
+
+                seasonOptions.forEach((opt) =>
+                    opt.classList.remove('selected'),
+                );
+                e.target.classList.add('selected');
+
+                if (currentSeason !== selectedValue) {
+                    currentSeason = selectedValue;
+
+                    const driverContainer = document.getElementById(
+                        'all-drivers-container',
+                    );
+                    if (driverContainer) {
+                        driverContainer.innerHTML = '';
+                    }
+
+                    loadData(currentSeason).then(() => {
+                        initLoad();
+                    });
+                }
+            });
+        });
+
+        document.addEventListener('click', () => {
+            customSeasonSelector.classList.remove('active');
+        });
     }
 }
 

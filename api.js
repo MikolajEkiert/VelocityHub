@@ -221,7 +221,6 @@ async function fetchTeamStandings(year = 2025) {
             ),
             fetchDriverStandings(year),
         ]);
-        console.log(teamStandings);
 
         const drivers = driversData.standings || [];
         const teamColors = new Map();
@@ -380,6 +379,7 @@ function transformDriversData(driversData, driversRaw = []) {
                 name: nameParts[0] || '',
                 surname: nameParts.slice(1).join(' ') || fullName,
                 team: driver.team_name || 'Unknown',
+                teamColor: driver.team_colour ? `#${driver.team_colour}` : null,
                 points: stats.points,
                 number: driver.driver_number || 0,
                 fullName,

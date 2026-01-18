@@ -119,7 +119,13 @@ body {
   font-size: 1.2rem;
 }
 
-.season-toggle {
+.custom-season-selector {
+  position: relative;
+  margin-right: 1rem;
+  font-family: 'Titillium Web', sans-serif;
+}
+
+.season-selector-btn {
   background: var(--bg-secondary);
   border: 2px solid var(--f1-red);
   color: var(--text-primary);
@@ -128,19 +134,72 @@ body {
   font-size: 0.9rem;
   cursor: pointer;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   transition: all 0.3s ease;
-  font-family: 'Titillium Web', sans-serif;
-  margin-right: 1rem;
+  min-width: 90px;
+  justify-content: space-between;
 }
 
-.season-toggle:hover {
+.season-selector-btn:hover {
+  background: var(--f1-red);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(225, 6, 0, 0.3);
+}
+
+.season-selector-btn:hover .dropdown-arrow {
+  color: var(--text-primary);
+}
+
+.dropdown-arrow {
+  color: var(--f1-red);
+  font-size: 0.7rem;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.custom-season-selector.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.season-dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--f1-red);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  display: none;
+  flex-direction: column;
+  z-index: 1001;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.custom-season-selector.active .season-dropdown-options {
+  display: flex;
+}
+
+.season-option {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.season-option:hover {
+  background: rgba(225, 6, 0, 0.2);
+  color: var(--text-primary);
+}
+
+.season-option.selected {
   background: var(--f1-red);
   color: var(--text-primary);
-  transform: translateY(-2px);
-}
-
-.season-toggle:active {
-  transform: translateY(0);
 }
 
 .hero {
