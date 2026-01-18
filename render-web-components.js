@@ -1,11 +1,3 @@
-/**
- * VelocityHub - Render Functions with Web Components
- * Zaktualizowana wersja wykorzystująca web components z Shadow DOM
- */
-
-// ============================================
-// DRIVER CARDS - Web Component Version
-// ============================================
 function renderDriverCards(
     drivers,
     containerId = 'driver-cards-container',
@@ -51,9 +43,6 @@ function renderDriverCards(
     );
 }
 
-// ============================================
-// STATS CARDS - Web Component Version
-// ============================================
 function renderStatCards(stats, containerId = 'stats-grid') {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -80,9 +69,6 @@ function renderStatCards(stats, containerId = 'stats-grid') {
     );
 }
 
-// ============================================
-// RANKING TABLE - Updated Version
-// ============================================
 function renderRankingTable(drivers) {
     const container = document.getElementById('ranking-table-container');
     if (!container) return;
@@ -167,9 +153,6 @@ function renderRankingTable(drivers) {
     container.replaceChildren(table);
 }
 
-// ============================================
-// TEAMS GRID - Web Component Version
-// ============================================
 function renderTeamsGrid(teams) {
     const container = document.getElementById('teams-container');
     if (!container) return;
@@ -194,9 +177,6 @@ function renderTeamsGrid(teams) {
     );
 }
 
-// ============================================
-// RACE CALENDAR - Web Component Version
-// ============================================
 function renderRaceCalendar(races) {
     const container = document.getElementById('race-calendar-container');
     if (!container) return;
@@ -250,9 +230,6 @@ function renderRaceCalendar(races) {
     );
 }
 
-// ============================================
-// RESULTS TABLE - Web Component Version
-// ============================================
 function renderSessionResults(results, drivers, sessionType) {
     const container = document.getElementById('results-table-container');
     if (!container) return;
@@ -305,13 +282,6 @@ function renderSessionResults(results, drivers, sessionType) {
     container.replaceChildren(resultsWrapper);
 }
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-/**
- * Zwraca kolor zespołu na podstawie jego nazwy
- */
 function getTeamColor(teamName) {
     const teamColors = {
         FERRARI: '#FF0000',
@@ -330,9 +300,6 @@ function getTeamColor(teamName) {
     return teamColors[teamName?.toUpperCase()] || '#CCCCCC';
 }
 
-/**
- * Formatuje czas z milisekund na format MM:SS.mmm
- */
 function formatTime(milliseconds) {
     if (!milliseconds || milliseconds <= 0) return '-';
 
@@ -344,39 +311,6 @@ function formatTime(milliseconds) {
     return `${minutes}:${String(seconds).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
 }
 
-/**
- * Zwraca kod kraju na podstawie nazwy wyścigu
- */
-function getCountryCode(raceName) {
-    const countryMap = {
-        Bahrain: '🇧🇭',
-        'Saudi Arabia': '🇸🇦',
-        Australia: '🇦🇺',
-        Japan: '🇯🇵',
-        China: '🇨🇳',
-        Miami: '🇺🇸',
-        Spain: '🇪🇸',
-        Monaco: '🇲🇨',
-        Canada: '🇨🇦',
-        Austria: '🇦🇹',
-        'Great Britain': '🇬🇧',
-        Hungary: '🇭🇺',
-        Belgium: '🇧🇪',
-        Netherlands: '🇳🇱',
-        Italy: '🇮🇹',
-        Singapore: '🇸🇬',
-        Azerbaijan: '🇦🇿',
-        Mexico: '🇲🇽',
-        'United States': '🇺🇸',
-        Brazil: '🇧🇷',
-        'Abu Dhabi': '🇦🇪',
-    };
-    return countryMap[raceName] || '';
-}
-
-/**
- * Inicjalizuje odliczanie czasu do następnego wyścigu
- */
 function initCountdownTimer(raceDate, raceTime) {
     const timerElement = document.getElementById('countdown-timer');
     if (!timerElement) return;
@@ -406,19 +340,3 @@ function initCountdownTimer(raceDate, raceTime) {
     updateTimer();
     setInterval(updateTimer, 60000);
 }
-
-// Wywóż na koniec pliku dla kompatybilności
-const MONTH_NAMES = [
-    'STYCZEŃ',
-    'LUTY',
-    'MARZEC',
-    'KWIECIEŃ',
-    'MAJ',
-    'CZERWIEC',
-    'LIPIEC',
-    'SIERPIEŃ',
-    'WRZESIEŃ',
-    'PAŹDZIERNIK',
-    'LISTOPAD',
-    'GRUDZIEŃ',
-];
