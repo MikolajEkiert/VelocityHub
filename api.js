@@ -106,12 +106,19 @@ async function fetchDriverStandings(year = 2025) {
             return { standings: [], positions: [] };
         }
 
-        const [drivers, positions] = await Promise.all([
+        const [drivers, positions, championshipDrivers] = await Promise.all([
             fetchOpenF1Data(`/drivers?session_key=${latestRace.session_key}`),
             fetchOpenF1Data(`/position?session_key=${latestRace.session_key}`),
+            fetchOpenF1Data(
+                `/championship_drivers?session_key=${latestRace.session_key}`,
+            ),
         ]);
 
-        return { standings: drivers || [], positions: positions || [] };
+        return {
+            standings: drivers || [],
+            positions: positions || [],
+            championship: championshipDrivers || [],
+        };
     } catch (error) {
         console.error(error);
         return { standings: [], positions: [] };
@@ -191,37 +198,49 @@ async function fetchRaceSessions(meetingKey) {
 
 async function fetchTeamStandings(year = 2025) {
     try {
-        const driversData = await fetchDriverStandings(year);
-        const drivers = driversData.standings || [];
+        const sessions = await fetchSessions(year);
+        const raceSessions = sessions.filter(
+            (s) => s.session_name === 'Race' && s.session_key,
+        );
 
-        const teamPoints = new Map();
+        if (raceSessions.length === 0) {
+            return [];
+        }
+
+        const latestRace = raceSessions
+            .filter((s) => new Date(s.date_start) <= new Date())
+            .sort((a, b) => new Date(b.date_start) - new Date(a.date_start))[0];
+
+        if (!latestRace || !latestRace.session_key) {
+            return [];
+        }
+
+        const [teamStandings, driversData] = await Promise.all([
+            fetchOpenF1Data(
+                `/championship_teams?session_key=${latestRace.session_key}`,
+            ),
+            fetchDriverStandings(year),
+        ]);
+        console.log(teamStandings);
+
+        const drivers = driversData.standings || [];
+        const teamColors = new Map();
 
         drivers.forEach((driver) => {
-            const team = driver.team_name || 'Unknown';
-            if (!teamPoints.has(team)) {
-                teamPoints.set(team, {
-                    team: team,
-                    points: 0,
-                    drivers: [],
-                    teamColor: driver.team_colour || '#FFFFFF',
-                });
-            }
-
-            const teamData = teamPoints.get(team);
-            const driverName =
-                driver.full_name ||
-                driver.broadcast_name ||
-                driver.name_acronym;
-            if (driverName && !teamData.drivers.includes(driverName)) {
-                teamData.drivers.push(driverName);
+            if (driver.team_name && driver.team_colour) {
+                teamColors.set(driver.team_name, driver.team_colour);
             }
         });
 
-        return Array.from(teamPoints.values())
-            .filter((team) => team.drivers.length > 0)
-            .sort((a, b) => b.points - a.points)
+        if (!teamStandings || teamStandings.length === 0) return [];
+
+        return teamStandings
+            .sort((a, b) => b.points_current - a.points_current)
             .map((team, index) => ({
-                ...team,
+                team: team.team_name,
+                points: team.points_current,
+                drivers: [],
+                teamColor: teamColors.get(team.team_name) || '#FFFFFF',
                 position: index + 1,
             }));
     } catch (error) {
@@ -295,19 +314,32 @@ function transformMeetingsToRaces(meetings, sessions) {
 }
 
 function transformDriversData(driversData, driversRaw = []) {
-    const { standings = [], positions = [] } = driversData;
+    const { standings = [], positions = [], championship = [] } = driversData;
 
     const positionMap = new Map();
-    positions.forEach((pos) => {
-        const existing = positionMap.get(pos.driver_number);
-        if (!existing || new Date(pos.date) > new Date(existing.date)) {
-            positionMap.set(pos.driver_number, pos.position);
-        }
-    });
+
+    if (championship.length > 0) {
+        championship.forEach((c) => {
+            positionMap.set(c.driver_number, {
+                pos: c.position_current,
+                points: c.points_current,
+            });
+        });
+    } else {
+        positions.forEach((pos) => {
+            const existing = positionMap.get(pos.driver_number);
+            if (!existing || new Date(pos.date) > new Date(existing.date)) {
+                positionMap.set(pos.driver_number, {
+                    pos: pos.position,
+                    points: 0,
+                });
+            }
+        });
+    }
 
     const seenNumbers = new Set();
-
     const allDriversMap = new Map();
+
     driversRaw.forEach((d) => {
         if (d.driver_number && !allDriversMap.has(d.driver_number)) {
             allDriversMap.set(d.driver_number, d);
@@ -332,7 +364,10 @@ function transformDriversData(driversData, driversRaw = []) {
             return true;
         })
         .map((driver) => {
-            const position = positionMap.get(driver.driver_number) || 0;
+            const stats = positionMap.get(driver.driver_number) || {
+                pos: 0,
+                points: 0,
+            };
             const fullName =
                 driver.full_name ||
                 driver.broadcast_name ||
@@ -341,11 +376,11 @@ function transformDriversData(driversData, driversRaw = []) {
             const nameParts = fullName.split(' ').filter(Boolean);
 
             return {
-                position: position,
+                position: stats.pos,
                 name: nameParts[0] || '',
                 surname: nameParts.slice(1).join(' ') || fullName,
                 team: driver.team_name || 'Unknown',
-                points: 0,
+                points: stats.points,
                 number: driver.driver_number || 0,
                 fullName,
                 countryCode: driver.country_code || '',
@@ -357,6 +392,8 @@ function transformDriversData(driversData, driversRaw = []) {
         if (a.position > 0 && b.position > 0) return a.position - b.position;
         if (a.position > 0) return -1;
         if (b.position > 0) return 1;
+
+        if (b.points !== a.points) return b.points - a.points;
         return String(a.name).localeCompare(String(b.name));
     });
 }

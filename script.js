@@ -34,6 +34,8 @@ async function loadData(season = currentSeason) {
 
         updateSeasonText(season);
         renderContent();
+
+        fetchNextRaceData();
     } catch (error) {
         console.error('Error loading data:', error);
         const errorMsg =
@@ -42,6 +44,41 @@ async function loadData(season = currentSeason) {
             const el = document.getElementById(id);
             if (el) el.innerHTML = errorMsg;
         });
+    }
+}
+
+async function fetchNextRaceData() {
+    try {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        let meetings = await fetchMeetings(currentYear);
+        let sessions = await fetchSessions(currentYear);
+
+        let races = transformMeetingsToRaces(meetings, sessions);
+        let nextRace = races.find((r) => r.raceDate > now);
+
+        if (!nextRace) {
+            meetings = await fetchMeetings(currentYear + 1);
+            sessions = await fetchSessions(currentYear + 1);
+            if (meetings && meetings.length > 0) {
+                races = transformMeetingsToRaces(meetings, sessions);
+                nextRace = races.find((r) => r.raceDate > now);
+            }
+        }
+
+        if (nextRace) {
+            const dateStr = nextRace.date;
+            const timeStr = nextRace.time || '12:00:00Z';
+            initCountdownTimer(dateStr, timeStr);
+        } else {
+            const timerElement = document.getElementById('countdown-timer');
+            if (timerElement) {
+                timerElement.textContent = 'BRAK NADCHODZĄCYCH WYŚCIGÓW';
+            }
+        }
+    } catch (err) {
+        console.error('Could not fetch next race:', err);
     }
 }
 
@@ -69,7 +106,7 @@ function switchSeason() {
     }
 
     loadData(currentSeason).then(() => {
-        initLazyLoad();
+        initLoad();
     });
 }
 
@@ -77,23 +114,6 @@ function renderContent() {
     renderRankingTable(allDrivers);
     renderRaceCalendar(allRaces);
     renderTeamsGrid(allTeams);
-
-    const now = Date.now();
-    const nextRace = allRaces.find((r) => {
-        if (r.isCompleted) return false;
-        return r.raceDate && r.raceDate.getTime() > now;
-    });
-
-    if (nextRace) {
-        const dateStr = nextRace.date;
-        const timeStr = nextRace.time || '12:00:00Z';
-        initCountdownTimer(dateStr, timeStr);
-    } else {
-        const timerElement = document.getElementById('countdown-timer');
-        if (timerElement) {
-            timerElement.textContent = 'BRAK NADCHODZĄCYCH WYŚCIGÓW';
-        }
-    }
 }
 
 function renderAllDrivers() {
@@ -275,7 +295,7 @@ function init() {
     loadData();
 }
 
-function initLazyLoad() {
+function initLoad() {
     const kierowcySection = document.getElementById('kierowcy');
     if (!kierowcySection) return;
 
@@ -296,9 +316,9 @@ function initLazyLoad() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         init();
-        initLazyLoad();
+        initLoad();
     });
 } else {
     init();
-    initLazyLoad();
+    initLoad();
 }
